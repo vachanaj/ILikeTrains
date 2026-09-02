@@ -1,0 +1,15 @@
+references.bib is a conflict magnet: everyone appends to the end of the same file.
+
+Options, in order of preference:
+
+1. Split by topic, mirroring the sections: bib/power-electronics.bib , bib/control.bib , bib/standards.bib .
+Then \addbibresource{bib/power-electronics.bib} for each. Cheap and effective.
+
+2. Keep the file sorted by citation key. Insertions then scatter, so two people appending different entries usually
+land in different places.
+
+3. One person owns the .bib . Others request entries via an issue. Works for small teams, creates a bottleneck.
+
+Use consistent citation keys: author2023shorttitle , e.g. hodkiewicz2021maintenance . Export from Zotero or
+JabRef rather than hand-writing entries — hand-written BibTeX is where inconsistent author formatting comes
+from.
