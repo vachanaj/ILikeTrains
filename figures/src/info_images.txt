@@ -1,3 +1,21 @@
 scripts and sources that generate figures goes in src
 
 the generated figures (committed) goes in figures as .pdf or .png for example
+
+
+
+Figures
+Commit both the source and the output. The script that generates the Bode plot goes in figures/src/ , the
+resulting PDF in figures/ . Reviewers and CI need the output; future you needs the source.
+
+Vector formats (PDF, or PGF/TikZ) for anything plotted. PNG only for photographs and screenshots.
+
+Binary files never merge. If two people regenerate figures/bode.pdf on separate branches, Git cannot
+merge them — one version wins. Assign figure ownership explicitly.
+
+Do not commit multi-megabyte files. Git stores every version forever. A 40 MB oscilloscope screenshot
+committed ten times is 400 MB in the repository, permanently. Crop and downsample first. If you genuinely
+need large binaries, ask me about Git LFS.
+
+Stable file names. Renaming fig1.pdf to fig-converter-topology.pdf breaks every \includegraphics
+on every open branch. Name it properly the first time.
