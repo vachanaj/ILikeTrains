@@ -1,0 +1,84 @@
+The cycle
+
+# 1. Start from an up-to-date main
+
+---------terminal-------
+git switch main
+git pull
+------------------------
+
+
+# 2. Create your branch
+
+-------------terminal------------
+git switch -c example/branch-name
+---------------------------------
+
+
+# 3. Work. Commit often — small commits are easy to review and easy to undo.
+
+# (edit files aka work)
+
+------------------------terminal-------------------------
+git add .     or     git add specific/filepath
+git commit -m "example: commit message, what did you do?"
+---------------------------------------------------------
+
+# (edit more)
+
+--------------------terminal-------------------
+git commit -am "example: what more did you do?"
+-----------------------------------------------
+
+
+# 4. Publish
+
+----------------terminal--------------
+git push -u origin example/branch-name
+--------------------------------------
+
+
+# 5. Open a pull request on GitHub (or: gh pr create --fill)
+
+# 6. A teammate reviews. Address comments with more commits, push again.
+
+# 7. Once approved and CI is green, merge on GitHub. Delete the branch.
+
+# 8. Clean up locally
+
+-------------terminal------------
+git switch main
+git pull
+git branch -d example/branch-name
+---------------------------------
+
+
+
+
+----Branch naming----
+
+example/branch-name
+text/<what>         prose in the report         text/ch2-related-work
+fig/<what>          figures and plots           fig/bode-plot-regeneration
+bib/<what>          references                  bib/add-ieee-2024-refs
+code/<what>         source code                 code/adc-driver
+build/<what>        toolchain, CI, Makefile     build/add-glossary-pass
+fix/<what>          corrections                 fix/eq-3-14-sign-error
+
+Lowercase, hyphens, no spaces, no umlauts or å/ä/ö. Some tools still handle them badly.
+
+
+
+
+----Keeping your branch current----
+
+If your branch has been alive more than a day, bring main 's changes into it before you open the pull request.
+Resolve conflicts on your branch, in your own time, not in the PR under deadline pressure.
+
+------------------------terminal-------------------------
+git switch main
+git pull
+git switch text/ch3-loss-model
+git merge main
+---------------------------------------------------------
+# then resolve any conflicts, commit, push
