@@ -1,0 +1,3 @@
+scripts and sources that generate figures goes in src
+
+the generated figures (committed) goes in figures as .pdf or .png for example
