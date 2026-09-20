@@ -37,13 +37,21 @@ Using data fusion they combine the two methods of localization and the tracking 
 Skriv mer om fysisk uppställning och hur de restade + resultat
 
 Another approach to indoor localization is presented by De Angelis et al. \cite{deangelis2015indoor}, they also utilize a low frequency alternating current (AC), but instead of a single receiver detecting mutiple beacons they use coplanar resonant coils and is based on recieved power measurements.
+Resonance makes the recieved signal stronger so it can be detected from farther away. It also helps filter out signals at other frequencies.
+
 The system designed is based on a network of transmitter nodes, each node consists of an oscillator circuit and of a resonating coil.
 The system also contains a reciever node, witch position is to be estimated.
 When the transmitter nodes are powerd they generate a magentic field that interacts with the reciever node, inducing a voltage in the reciever coil.
 The authors show that by measureing the root-means-square voltage of the reciever coil it's possible to relate the voltage to the distance between the known position of the transmitter nodes and the unknown position of the reciever node.
-When the transmitter and reciever nodes are coplanar, meaning that there exists a plane that contains the axes of all the coils, the inductanse depends only on the distance seperating them. 
+When the transmitter and reciever nodes are coplanar, meaning that there exists a plane that contains the axes of all the coils, the inductanse depends only on the distance seperating them.
+Therefore the direction of the coils is important. Tilting a coil changing the recieved voltage and can make the position less accurate. 
 This makes it possible to estimate the position using linear fitting of the measured voltage to known voltages at known distances.
+The system must be calibrated first. The reciever is placed at different known distances from each transmitter. The measured voltages are used to make a calibration curve. Then the system uses this curve to estimate the distance from recieved voltage.
+
+With three or more distance measurments can a position in 2D be find. Each distance creates a circle around a transmitter and the reciever should be where the circles meet. Measurement errors can disturb the circles from meeting at one point, so therefore they used a least-square method to find the position that best represented all the measured distances.
 
 The system was tested using coils with a radius of 9 cm operating at a frequancy of 189.5kHz.
 With the transmitter nodes placed in a triangular formation in tree corners of a 3x3 $m^2$ area and the reciever placed in a 1.2x1.2 $m^2$ area in the center of the triangle, the authors were able to achieve a localization error with an average of 3.3 cm.
-With less favroble conditions, and the reciever placed outside the triangle, the average localization error increased to 12.7 cm.
+With less favroble conditions, and the reciever placed outside the triangle, the average localization error increased to 12.7 cm. This shows that placement has a large effect on accuracy. The best results are achieved when the fixed nodes surrounded the moving node. 
+
+The transmitter and reciever roles can also be reversed, and could be used for our railway system. Each train could carry a small transmitter and fixed reciever coils could be placed under the table. The same calibration and positioning method could then be used to find the train's position.
