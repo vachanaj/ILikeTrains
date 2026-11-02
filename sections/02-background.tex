@@ -49,6 +49,407 @@ The system must be calibrated first. The reciever is placed at different known d
 
 With three or more distance measurments can a position in 2D be find. Each distance creates a circle around a transmitter and the reciever should be where the circles meet. Measurement errors can disturb the circles from meeting at one point, so therefore they used a least-square method to find the position that best represented all the measured distances.
 
-The system was tested using coils with a radius of 9 cm operating at a frequency of 189.5kHz.
-With the transmitter nodes placed in a triangular formation in three corners of a 3x3 $m^2$ area and the receiver placed in a 1.2x1.2 $m^2$ area in the center of the triangle, the authors were able to achieve a localization error with an average of 3.3 cm.
-With less favorable conditions, and the receiver placed outside the triangle, the average localization error increased to 12.7 cm.
+The system was tested using coils with a radius of 9 cm operating at a frequancy of 189.5kHz.
+With the transmitter nodes placed in a triangular formation in tree corners of a 3x3 $m^2$ area and the reciever placed in a 1.2x1.2 $m^2$ area in the center of the triangle, the authors were able to achieve a localization error with an average of 3.3 cm.
+With less favroble conditions, and the reciever placed outside the triangle, the average localization error increased to 12.7 cm. This shows that placement has a large effect on accuracy. The best results are achieved when the fixed nodes surrounded the moving node. 
+
+The transmitter and reciever roles can also be reversed, and could be used for our railway system. Each train could carry a small transmitter and fixed reciever coils could be placed under the table. The same calibration and positioning method could then be used to find the train's position.
+
+
+
+
+\chapter{Background Analysis} \label{sec:background-analysis}
+
+\section{Coil-Based Electromagnetic Positioning Systems}\label{sec:bg-1-1}
+\subsection{How It Works}\label{sec:bg-1-1-1}
+
+Coil-based positioning systems use magnetic fields to determine the position of an object. When an alternating 
+current goes through a transmitter coil it produces a changing magnetic field. This field can induce a voltage 
+in a nearby receiver coil. The received signal depends on the distance and orientation between the coils. 
+By comparing measurements from coils at known positions it is possible to estimate the location of the unknown 
+coil \cite{deangelis2015indoor}.
+
+
+
+\subsection{Existing Systems}\label{sec:bg-1-1-2}
+
+De Angelis et al. \cite{deangelis2015indoor} developed an indoor positioning system using resonant transmitter and 
+receiver coils. Their main system used fixed transmitters and a moving receiver. The received voltage was used 
+to estimate distances between the coils. These distances were then used to calculate the position through 
+trilateration.
+
+The writer described two modes. In \textbf{time separation mode} the transmitters operate one after 
+another. In \textbf{frequency separation mode} several transmitters operate at the same time using different 
+frequencies. This allows the receiver to identify each transmitter. Their improved system used frequency separation 
+and a Discrete Fourier Transform (DFT) to separate the received signals.
+
+Sheinker et al. \cite{sheinker2013localization} developed another positioning system using fixed transmitters and 
+a magnetic receiver. Their system also used different frequencies to identify the transmitters. They 
+calculated the position directly from magnetic field measurements by using a mathematical model instead of first 
+estimating distances.
+
+Both papers gives useful methods for electromagnetic positioning. In the our train system 
+the arrangement will be reversed. Each train will carry a transmitter coil while the receiver coils will be 
+fixed under the table.
+
+
+
+
+\section{Theory}\label{sec:bg-1-2}
+\subsection{Magnetic Field of a Coil}\label{sec:bg-1-2-1}
+
+A electric current produces a magnetic field around a wire. The strength and direction of this field can be 
+described using Biot--Savart's law \cite{sadiku2018elements}.
+
+When the wire is formed into a coil the magnetic fields produced by its turns combine. The resulting field depends 
+on the current and the shape of the coil. It also depends on the number of turns. If an alternating current flows 
+through the coil the magnetic field changes with time.
+
+The field around a circular current loop is shown in Figure~\ref{fig:bg-a01} (Appendix~\ref{app:bg-figures}).
+
+
+
+\subsection{Magnetic Dipole} \label{sec:bg-1-2-2}
+
+A coil carrying current can be represented as a magnetic dipole when the distance from the coil to the measurement point is much larger than
+the physical size of the coil, such as its diameter \cite{sadiku2018elements}. This simplifies the calculation of the magnetic field around the coil.
+
+The magnitude of the magnetic dipole moment is:
+
+\begin{equation}
+    m = NIA
+\end{equation}
+
+where $m$ is the magnetic dipole moment
+($\mathrm{A\,m^2}$), $N$ is the number of turns,
+$I$ is the current (A) and $A$ is the coil area
+($\mathrm{m^2}$).
+
+The magnetic dipole model also describes how the magnetic field changes with distance and direction.
+According to Sadiku \cite{sadiku2018elements}, the magnetic flux density can be expressed as:
+
+\begin{equation}
+    \mathbf{B}(r,\theta) =
+    \frac{\mu_0 m}{4\pi r^3}
+    \left(
+        2\cos\theta\,\hat{\mathbf{r}}
+        +
+        \sin\theta\,\hat{\boldsymbol{\theta}}
+    \right)
+\end{equation}
+
+where $\mu_0$ is the permeability of free space, $r$ is the distance from the coil centre to the
+measurement point and $\theta$ is the angle measured from the magnetic dipole axis. The unit vectors
+$\hat{\mathbf{r}}$ and $\hat{\boldsymbol{\theta}}$ represent the radial and angular directions.
+
+it shows that the magnetic field decreases with the third power of distance when the observation
+direction remains unchanged. It also shows that the field depends on the direction relative to the coil axis.
+
+The magnetic dipole field is shown in
+Figure~\ref{fig:bg-a02}
+(Appendix~\ref{app:bg-figures}).
+
+
+
+
+
+\subsection{Magnetic Flux and Faraday's Law of Induction}\label{sec:bg-1-2-3}
+
+Magnetic flux describes the magnetic field passing through a surface. For a receiver coil it depends on the magnetic field strength and how the coil is oriented relative to the field \cite{sadiku2018elements}.
+
+The magnetic flux is expressed as:
+
+\[
+\Phi = \int_S \mathbf{B} \cdot \mathrm{d}\mathbf{S}
+\]
+
+where \(\Phi\) is the magnetic flux (Wb), B is the magnetic flux density (T) and dS represents an element of the surface area.
+
+According to Faraday's law a changing magnetic flux induces a voltage in a coil:
+
+\[
+V_{\mathrm{ind}} = -N\frac{\mathrm{d}\Phi}{\mathrm{d}t}
+\]
+
+Here V is the induced voltage and N is the number of turns. The negative sign describes the direction of the induced voltage.
+
+
+
+
+\subsection{Mutual Inductance and Magnetic Coupling}\label{sec:bg-1-2-4}
+
+When the magnetic field from one coil passes through another coil the two coils are magnetically coupled. Mutual inductance describes the strength of 
+this interaction \cite{sadiku2018elements}.
+
+It can be expressed as:
+
+\[
+M = \frac{N_{\mathrm r}\Phi_{\mathrm r}}{I_{\mathrm t}}
+\]
+
+where M is the mutual inductance (H), \(N_{\mathrm r}\) is the number of receiver turns, \(\Phi_{\mathrm r}\) is the magnetic flux through one receiver 
+turn caused by the transmitter and \(I_{\mathrm t}\) is the transmitter current.
+
+Mutual inductance depends on the coil dimensions and their relative positions. It also changes when the coils are rotated. These changes affect the 
+voltage induced in the receiver coil.
+
+The interaction between two circuits is illustrated in Figure~\ref{fig:bg-a04} (Appendix~\ref{app:bg-figures}).
+
+
+
+
+
+\section{Transmitter and Receiver Coil}\label{sec:bg-1-3}
+
+\subsection{Coil Parameters and Signal}\label{sec:bg-1-3-1}
+
+The electromagnetic principles in Section~\ref{sec:bg-1-2} show that the received voltage is affected by several coil parameters. These include the coil 
+size and number of turns.
+The transmitter current also affects the signal. A higher current produces a stronger magnetic field and can induce a larger voltage in the receiver.
+
+The operating frequency decides how quickly the magnetic field changes. According to Faraday's law a faster change in magnetic flux can produce a large 
+induced voltage. The received signal is strongest when the coils are near their resonant frequency. The signal becomes weaker when the frequency moves 
+away from resonance. \cite{deangelis2015indoor,sadiku2018elements}.
+
+
+
+
+
+\subsection{Coil Distance and Orientation} \label{sec:bg-1-3-2}
+
+Mutual inductance depends on the distance and orientation between two coils. De Angelis et al. \cite{deangelis2015indoor} studied this using 
+a model of circular coils. They found that in a coplanar arrangement, mutual inductance depends only on the distance between the coil centres.
+
+In the model train system the transmitters move above the fixed receivers. Both horizontal distance
+and vertical separation can therefore affect the received voltage.
+
+
+
+
+
+\subsection{Resonance and Quality Factor}\label{sec:bg-1-3-3}
+
+De Angelis et al. \cite{deangelis2015indoor} used resonant circuits to increase the signal. A resonant circuit replys  strongly near its resonant frequency.
+
+An important parameter is the quality factor (Q). For the resonator model used in \cite{deangelis2015indoor} it is expressed as:
+
+\[
+Q = \frac{\omega L}{R}
+\]
+
+where \(\omega\) is the angular frequency (rad/s), L is the inductance (H) and R is the resistance (\(\Omega\)).
+
+A higher quality factor can increase the received signal near resonance. But it also makes the frequency bandwidth narrower.
+
+De Angelis et al. \cite{deangelis2015indoor} measured a resonant frequency of approximately 189.7 kHz and a bandwidth of about 3 kHz. Their measured 
+frequency response is shown in Figure~\ref{fig:bg-a07} (Appendix~\ref{app:bg-figures}).
+
+The transmitter frequencies must be different so the signals can be identified. They must also be close to resonance so the signals stay strong. 
+This is important when several model trains need to be identified at the same time.
+
+
+
+
+
+
+\section{Signal Detection and Identification}\label{sec:bg-1-4}
+
+\subsection{Amplification and Filtering} \label{sec:bg-1-4-1}
+
+The voltage received by a coil can be very weak. Amplification makes the signal easier to measure.
+De Angelis et al. \cite{deangelis2015indoor} used an amplifier with a gain of 100.
+They found that strong signals from nearby coils could overload the amplifier and cause errors.
+
+Filtering helps reduce noise and unwanted signals. 
+
+
+\subsection{Frequency-Based Identification} \label{sec:bg-1-4-2}
+
+Each transmitter can use a different frequency so the receiver can identify its signal.
+
+De Angelis et al. \cite{deangelis2015indoor} tested this method with four transmitters.
+They used a Discrete Fourier Transform (DFT) to separate the signals by frequency as shown in Figure~\ref{fig:bg-a08}
+(Appendix~\ref{app:bg-figures}).
+They were able to identify all four signals but also found that some frequencies could cause interference.
+
+
+
+
+\subsection{Lock-In Detection}\label{sec:bg-1-4-3}
+
+Lock-in detection is another method for measuring signals at known frequencies. It is especially useful when the wanted signal is weak compared with 
+unwanted signals or noise.
+
+The method uses a reference signal at the frequency of the transmitter. The received signal is multiplied by this reference. When the frequencies match, 
+then the result contains a slowly changing component related to the wanted signal. A low-pass filter removes the higher-frequency components. This makes it possible to estimate the wanted signal amplitude.
+
+For example, if two transmitters operate at different frequencies a lock-in detector can be tuned to the first transmitter. A second detector can then 
+measure the signal from the other transmitter.
+
+Sheinker et al. \cite{sheinker2013localization} used this approach with a two-axis magnetic sensor and four lock-in amplifiers. Two amplifiers measured 
+the field components from the first transmitter and two measured the components from the second transmitter. Their receiver structure is shown in 
+Figure~\ref{fig:bg-a09} (Appendix~\ref{app:bg-figures}).
+
+The authors also used phase recovery to track changes in the signal phase. This allowed them to obtain both amplitude and phase information for 
+positioning.
+
+DFT-based processing and lock-in detection therefore provide two ways to separate transmitter signals. The DFT analyses several frequencies together 
+while lock-in detection extracts selected frequency components. Both methods are relevant to identifying multiple trains.
+
+
+
+
+
+\section{2D Position Estimation}\label{sec:bg-1-5}
+
+\subsection{Voltage-Based Estimation}\label{sec:bg-1-5-1}
+
+After the transmitter signals have been separated their measured amplitudes can be used for position estimation.
+
+One approach is to estimate the distance between the coils using the received voltage. This is possible because the magnetic coupling becomes 
+weaker as the distance increases. 
+The received voltage also depends on the coil orientation and electrical properties such as resistance and inductance.
+
+De Angelis et al. \cite{deangelis2015indoor} used voltage-based distance estimation. Their method required calibration to determine the relationship 
+between the measured voltage and distance.
+
+
+
+
+
+\subsubsection{Calibration} \label{sec:bg-1-5-1-1}
+
+De Angelis et al. \cite{deangelis2015indoor} measured the received voltage at known distances from each transmitter. The distances ranged from
+1.22 m to 4.29 m. Their results showed an approximately straight line when voltage and distance were plotted on logarithmic scales. The measurements 
+are shown in Figure~\ref{fig:bg-a10} (Appendix~\ref{app:bg-figures}).
+
+The authors created a separate calibration curve for each transmitter because the measured signal could differ between transmitters. These curves
+were then used to estimate distance from the received voltage.
+
+The model train system will use smaller transmitters moving above fixed receivers. Since the coil arrangement and distances are different the system
+will need its own calibration.
+
+
+
+
+
+\subsubsection{Trilateration and Nonlinear Least Squares}
+\label{sec:bg-1-5-1-2}
+
+Trilateration is a method used to find an unknown position using distances to known reference points.
+
+For 2D positioning the unknown coordinates are $(x,y)$. The distance to a reference coil at the
+known position $(x_i,y_i)$ can be calculated as:
+
+\begin{equation}
+    d_i = \sqrt{(x-x_i)^2+(y-y_i)^2}
+\end{equation}
+
+where $d_i$ is the distance between the unknown position and reference coil $i$.
+At least three reference points are normally used to find a unique position in 2D. Their placement
+is important for accurate positioning.
+
+The distances are first estimated from the received voltages using calibration. These estimates can
+contain measurement errors. This means that the distances may not point to exactly the same position.
+
+De Angelis et al. \cite{deangelis2015indoor} used nonlinear least squares to solve this problem.
+The method calculates distances from possible coordinates $(x,y)$ to the known reference points.
+It then compares these calculated distances with the distances estimated from calibration.
+The best position is the one with the smallest total squared difference.
+
+In the model train system the reference coils will be fixed receivers under the table.
+The transmitters will move above them. If the height difference between the coils is known as $h$ then the actual distance between their centres 
+can be calculated as:
+
+\begin{equation}
+    r_i = \sqrt{(x-x_i)^2+(y-y_i)^2+h^2}
+\end{equation}
+
+where $r_i$ is the actual distance between the coil centres and $h$ is their vertical separation.
+
+
+
+
+
+\subsection{Magnetic Field-Based Estimation} \label{sec:bg-1-5-4}
+ \subsubsection{Method 1, using Two Nearby Transmitters}
+
+Sheinker et al. \cite{sheinker2013localization} presented a method to find the position of a receiver using two transmitting coils placed close to each other. 
+The first transmitter is oriented along the x-axis and the second along the y-axis. Both transmitters have the same known magnetic moment. 
+They also operate at different frequencies so the receiver can measure their magnetic fields separately. The arrangement is 
+shown in Figure A.12 (Appendix A).
+
+The algorithm uses magnetic field measurements from the first transmitter in the x- and y-directions. These measurements are denoted 
+by \(B_{1x}\) and \(B_{1y}\). Their ratio is calculated as:
+
+\[
+a_1=\frac{B_{1x}}{B_{1y}}
+\]
+
+The magnetic dipole model is then used to calculate \(k_1\) from this ratio. This gives a relationship between the unknown receiver coordinates:
+
+\[
+k_1=\frac{3a_1\pm\sqrt{9a_1^2+8}}{4},\qquad x=k_1y
+\]
+
+Next, the algorithm uses measurements from both transmitters. It subtracts the y-component of the second transmitter's field from the x-component of 
+the first transmitter's field. The result is combined with \(k_1\) to calculate the y-coordinate:
+
+\[
+y=\left[
+\frac{3\frac{\mu_0}{4\pi}M_1(k_1^2-1)}
+{(B_{1x}-B_{2y})(k_1^2+1)^{5/2}}
+\right]^{1/3}
+\]
+
+Here \(M_1\) is the known magnetic moment of the transmitters and \(\mu_0\) is the permeability of free space. 
+The method is sensitive to measurement noise when the receiver is close to the diagonal line \(x=y\).
+
+\subsubsection{Method 2, using Two Spaced Transmitters}
+
+In Method 2 the authors use two transmitters placed at different known positions. Both transmitters are oriented in the same direction. The first is placed at $(0,0)$ and the second
+at $(0,-R)$. Here R is the known distance between them. The arrangement is also shown in Figure A.12 (Appendix A).
+
+The algorithm starts by calculating the ratio between these components:
+
+\[
+a_1=\frac{B_{1x}}{B_{1y}},\qquad
+a_3=\frac{B_{3x}}{B_{3y}}
+\]
+
+These ratios are used to calculate \(k_1\) and \(k_3\):
+
+\[
+k_1=\frac{3a_1\pm\sqrt{9a_1^2+8}}{4}
+\]
+
+\[
+k_3=\frac{3a_3\pm\sqrt{9a_3^2+8}}{4}
+\]
+
+Each value gives a relationship between the unknown receiver coordinates. The first transmitter gives \(x=k_1y\). The second gives \(x=k_3(y+R)\).
+
+The algorithm combines these relationships using the known distance R. The receiver coordinates are then calculated as:
+
+\[
+y=\frac{Rk_3}{k_1-k_3},\qquad x=k_1y
+\]
+
+Unlike Method 1 this method does not require the exact magnetic moment of the transmitters. This is because the calculations use ratios of magnetic 
+field components.
+
+
+
+
+\section{Key Points and Summary} \label{sec:bg-1-6}
+The background analysis explains how electromagnetic signals can be used to identify and locate moving transmitter coils. 
+Faraday's law explains how a changing magnetic field induces voltage in a receiver coil. The magnetic dipole model and mutual inductance 
+show how the received signal depends on coil size, distance and orientation.
+The studies show that resonance can make the received signal stronger but can also reduce the available frequency bandwidth. 
+It also shows how DFT and lock-in detection can be used to identify different transmitters. For positioning, the studies present 
+two methods: voltage-based distance estimation with trilateration and magnetic field-based positioning. Both studies reported good 
+positioning results. With this, we can use the findings from these studies when developing our system.
+
+
+
+
