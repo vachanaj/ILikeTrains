@@ -1,0 +1,196 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.3 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{nty/global//global/global/global}
+    \entry{deangelis2015indoor}{article}{}{}
+      \name{author}{7}{}{%
+        {{hash=b810c631093f1e577c26f83a30e8bf0c}{%
+           family={De\bibnamedelima Angelis},
+           familyi={D\bibinitperiod\bibinitdelim A\bibinitperiod},
+           given={Guido},
+           giveni={G\bibinitperiod}}}%
+        {{hash=1cbd2b5aee4f8298203177fbec142c74}{%
+           family={Pasku},
+           familyi={P\bibinitperiod},
+           given={Valter},
+           giveni={V\bibinitperiod}}}%
+        {{hash=de9191fe5e914e0d76acd54697492922}{%
+           family={De\bibnamedelima Angelis},
+           familyi={D\bibinitperiod\bibinitdelim A\bibinitperiod},
+           given={Alessio},
+           giveni={A\bibinitperiod}}}%
+        {{hash=b4f3ff6f1ce3d25eef6ca5d5d498b3f0}{%
+           family={Dionigi},
+           familyi={D\bibinitperiod},
+           given={Marco},
+           giveni={M\bibinitperiod}}}%
+        {{hash=63e8f0f8fb270eb20a597f6d888a32fe}{%
+           family={Mongiardo},
+           familyi={M\bibinitperiod},
+           given={Mauro},
+           giveni={M\bibinitperiod}}}%
+        {{hash=a9f646949b1d3be6e559ca132e8007a8}{%
+           family={Moschitta},
+           familyi={M\bibinitperiod},
+           given={Antonio},
+           giveni={A\bibinitperiod}}}%
+        {{hash=4a2454388e7185da294540671559156b}{%
+           family={Carbone},
+           familyi={C\bibinitperiod},
+           given={Paolo},
+           giveni={P\bibinitperiod}}}%
+      }
+      \strng{namehash}{77cfb5a8af3aabbc7f22adc04ff16c1d}
+      \strng{fullhash}{2e21676eb8023c1a5855a0ea4dba7f38}
+      \strng{fullhashraw}{2e21676eb8023c1a5855a0ea4dba7f38}
+      \strng{bibnamehash}{77cfb5a8af3aabbc7f22adc04ff16c1d}
+      \strng{authorbibnamehash}{77cfb5a8af3aabbc7f22adc04ff16c1d}
+      \strng{authornamehash}{77cfb5a8af3aabbc7f22adc04ff16c1d}
+      \strng{authorfullhash}{2e21676eb8023c1a5855a0ea4dba7f38}
+      \strng{authorfullhashraw}{2e21676eb8023c1a5855a0ea4dba7f38}
+      \field{sortinit}{D}
+      \field{sortinithash}{6f385f66841fb5e82009dc833c761848}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{issn}{0018-9456, 1557-9662}
+      \field{journaltitle}{IEEE Transactions on Instrumentation and Measurement}
+      \field{month}{5}
+      \field{number}{5}
+      \field{shortjournal}{IEEE Trans. Instrum. Meas.}
+      \field{title}{An {{Indoor AC Magnetic Positioning System}}}
+      \field{urlday}{18}
+      \field{urlmonth}{9}
+      \field{urlyear}{2026}
+      \field{volume}{64}
+      \field{year}{2015}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
+      \field{pages}{1267\bibrangedash 1275}
+      \range{pages}{9}
+      \verb{doi}
+      \verb 10.1109/TIM.2014.2381353
+      \endverb
+      \verb{urlraw}
+      \verb http://ieeexplore.ieee.org/document/7000532/
+      \endverb
+      \verb{url}
+      \verb http://ieeexplore.ieee.org/document/7000532/
+      \endverb
+    \endentry
+    \entry{GPS}{inreference}{}{}
+      \name{author}{1}{}{%
+        {{hash=4eced7187134dec1717ed706dc8ea5f4}{%
+           family={{Nationalencyklopedin}},
+           familyi={N\bibinitperiod}}}%
+      }
+      \strng{namehash}{4eced7187134dec1717ed706dc8ea5f4}
+      \strng{fullhash}{4eced7187134dec1717ed706dc8ea5f4}
+      \strng{fullhashraw}{4eced7187134dec1717ed706dc8ea5f4}
+      \strng{bibnamehash}{4eced7187134dec1717ed706dc8ea5f4}
+      \strng{authorbibnamehash}{4eced7187134dec1717ed706dc8ea5f4}
+      \strng{authornamehash}{4eced7187134dec1717ed706dc8ea5f4}
+      \strng{authorfullhash}{4eced7187134dec1717ed706dc8ea5f4}
+      \strng{authorfullhashraw}{4eced7187134dec1717ed706dc8ea5f4}
+      \field{sortinit}{N}
+      \field{sortinithash}{22369a73d5f88983a108b63f07f37084}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Nationalencyklopedin}
+      \field{title}{{{GPS}}}
+      \field{urlday}{18}
+      \field{urlmonth}{9}
+      \field{urlyear}{2026}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://www-ne-se.proxy.lib.ltu.se/uppslagsverk/encyklopedi/lång/gps
+      \endverb
+      \verb{url}
+      \verb https://www-ne-se.proxy.lib.ltu.se/uppslagsverk/encyklopedi/l%C3%A5ng/gps
+      \endverb
+    \endentry
+    \entry{sheinker2013localization}{article}{}{}
+      \name{author}{5}{}{%
+        {{hash=3b676dc507e6fce6b8e236a414183ff1}{%
+           family={Sheinker},
+           familyi={S\bibinitperiod},
+           given={Arie},
+           giveni={A\bibinitperiod}}}%
+        {{hash=9ab7acacd78c7a159c6a81a4c0fe716e}{%
+           family={Ginzburg},
+           familyi={G\bibinitperiod},
+           given={Boris},
+           giveni={B\bibinitperiod}}}%
+        {{hash=4fa42e1b88ac6c49929261aae1939651}{%
+           family={Salomonski},
+           familyi={S\bibinitperiod},
+           given={Nizan},
+           giveni={N\bibinitperiod}}}%
+        {{hash=f760c4f4c0116ccaf93e64cf36ea2ad3}{%
+           family={Frumkis},
+           familyi={F\bibinitperiod},
+           given={Lev},
+           giveni={L\bibinitperiod}}}%
+        {{hash=587388241777cae4fdae8f4a86cf8a69}{%
+           family={Kaplan},
+           familyi={K\bibinitperiod},
+           given={Ben-Zion},
+           giveni={B\bibinithyphendelim Z\bibinitperiod}}}%
+      }
+      \strng{namehash}{f60e42c5ae90ad7939d59340c2cf6255}
+      \strng{fullhash}{86389f8d68560ed092ae39366838bb53}
+      \strng{fullhashraw}{86389f8d68560ed092ae39366838bb53}
+      \strng{bibnamehash}{f60e42c5ae90ad7939d59340c2cf6255}
+      \strng{authorbibnamehash}{f60e42c5ae90ad7939d59340c2cf6255}
+      \strng{authornamehash}{f60e42c5ae90ad7939d59340c2cf6255}
+      \strng{authorfullhash}{86389f8d68560ed092ae39366838bb53}
+      \strng{authorfullhashraw}{86389f8d68560ed092ae39366838bb53}
+      \field{sortinit}{S}
+      \field{sortinithash}{b164b07b29984b41daf1e85279fbc5ab}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{issn}{1939-1404, 2151-1535}
+      \field{journaltitle}{IEEE Journal of Selected Topics in Applied Earth Observations and Remote Sensing}
+      \field{month}{4}
+      \field{number}{2}
+      \field{shortjournal}{IEEE J. Sel. Top. Appl. Earth Observations Remote Sensing}
+      \field{title}{Localization in {{2D Using Beacons}} of {{Low Frequency Magnetic Field}}}
+      \field{urlday}{18}
+      \field{urlmonth}{9}
+      \field{urlyear}{2026}
+      \field{volume}{6}
+      \field{year}{2013}
+      \field{dateera}{ce}
+      \field{urldateera}{ce}
+      \field{pages}{1020\bibrangedash 1030}
+      \range{pages}{11}
+      \verb{doi}
+      \verb 10.1109/JSTARS.2012.2213240
+      \endverb
+      \verb{urlraw}
+      \verb https://ieeexplore.ieee.org/document/6316084/
+      \endverb
+      \verb{url}
+      \verb https://ieeexplore.ieee.org/document/6316084/
+      \endverb
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
+
