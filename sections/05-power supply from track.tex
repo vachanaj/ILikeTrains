@@ -1,7 +1,19 @@
 \newpage
-\begin{section}{Power supply from track}
+\begin{section}{Transmitter power}
 
     \begin{subsection}{Method}
+        The transmitter is powered from the train which is powered by the track.
+        Drawing power from the train is an easy solution for source of power.
+        The power drawn carries a binary signal, by frequency modulating a square wave (squave).
+        This squave is a ±18V signal that gives power and instructions to the train, but for our purposes, 
+        we only need to extract the power from it. With the use of a fullbridge rectifier, and a buck converter 
+        we can convert the AC signal from the squave into a stable DC voltage suitable for powering the transmitter.
+
+        \begin{figure}[htbp]
+            \centering
+            \includegraphics[width=0.8\textwidth]{./figures/src/TrackPower.png}
+            \caption{The squave signal and power location on track.}
+        \end{figure}
 
     \end{subsection}
     \begin{subsection}{Implementation}
