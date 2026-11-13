@@ -2,16 +2,87 @@
 \begin{section}{Power supply from track}
 
     \begin{subsection}{Method}
+    The Märklin track provides a digitally pulsed supply of approximately
+    16--18~V. The voltage across the rails changes polarity with the track
+    signal, so neither rail is a suitable circuit ground. A four-diode
+    full-wave bridge connects to both rails and makes its DC output polarity
+    constant: one diode pair conducts for each rail polarity. The negative
+    bridge output is the local ground reference for the electronics.
 
+    A reservoir capacitor across the bridge output supplies the load between
+    charging pulses. For an approximately constant load current, its
+    first-order sizing relation is
+    \[
+        C \geq \frac{I_{\mathrm{load}}\,\Delta t}{\Delta V},
+    \]
+    where $\Delta t$ is the longest interval between replenishing pulses and
+    $\Delta V$ is the permitted ripple. The interval should be taken from the
+    actual track waveform, rather than assuming a sinusoidal mains frequency.
+    The calculation is a starting point: capacitor ESR, diode drops, peak
+    charging current, load changes, and component voltage ratings must also
+    be checked.
+
+    A TVS diode is useful for short transients, but it is not a voltage
+    regulator. In particular, the 18~V stand-off rating of an SMAJ18CA is
+    not its clamp voltage: avalanche breakdown begins above the stand-off
+    voltage, and the clamp voltage rises further with surge current. It
+    therefore cannot guarantee a supply below 21~V. A buck regulator is
+    needed to provide a controlled downstream voltage; the TVS, if used,
+    should be selected to protect that regulator and its input components.
     \end{subsection}
     \begin{subsection}{Implementation}
+    The KiCad rectifier simulation uses a four-diode bridge, a 200~$\mu$F
+    reservoir capacitor, and a 100~$\Omega$ load. Its diode models are
+    Schottky devices. The separate bench prototype was built with 1N4148
+    diodes, as recorded with the simulation files; this is a proof of
+    rectification, not a qualification of the final operating current.
+    Figure~\ref{fig:track-bridge} shows the simulation circuit.
 
+    \begin{figure}[h]
+        \centering
+        \includegraphics[width=0.8\textwidth]{code/full-wave-rectifier/full-wave-rectifier.png}
+        \caption{KiCad full-wave rectifier simulation circuit.}
+        \label{fig:track-bridge}
+    \end{figure}
+
+    The separate transmitter PCB design is in
+    \texttt{code/pcb\_transmitter/pcb\_transmitter.kicad\_sch} and
+    \texttt{code/pcb\_transmitter/pcb\_transmitter.kicad\_pcb}. Its schematic
+    specifies SB120 bridge diodes, an SMAJ20A TVS, an LMR14050 buck converter,
+    and an Arduino Nano ESP32 socket. This is distinct from both the
+    Schottky-model simulation and the 1N4148 bench build. The buck stage is
+    intended to make the rectified supply suitable for the ESP32 board; its
+    configured output must remain within that board's specified input range.
     \end{subsection}
     \begin{subsection}{Results}
+    The existing project notes report that the rectifier simulation and
+    bench prototype produced a stable DC output from the live track signal.
+    The simulation asset is a circuit diagram, however, and the bench note
+    does not include scope traces, measurement points, load conditions, or
+    numerical ripple values. A quantitative simulated-versus-measured
+    waveform or ripple comparison therefore cannot be reported from the
+    available records.
 
+    No rail-interference captures or measurements of spikes and data pulses
+    are recorded either. These results remain to be measured: capture the
+    rail differential voltage and rectified bus under a representative load,
+    and record pulse amplitudes, bus ripple, and transient peaks. Use an
+    isolated differential probe across the rails, since grounding either
+    rail to an earth-referenced oscilloscope would defeat the bridge's
+    floating input.
     \end{subsection}
     \begin{subsection}{Discussion}
-
+    Taking power from the rails avoids a separate battery and battery
+    replacement, but makes the electronics dependent on track contact and
+    exposes the supply to the track's data waveform and transients. An
+    inductive pickup could avoid a direct electrical connection to the
+    rails, but would add a pickup coil and conversion circuitry; it was not
+    used in this design. A linear regulator is simple, but dissipates the
+    input-to-output voltage difference as heat. A buck converter is more
+    efficient when stepping the rectified track voltage down, so the PCB
+    design uses an LMR14050 rather than relying on a TVS or linear regulator
+    to set the ESP32 supply. The TVS is for transient suppression, not
+    steady-state regulation.
     \end{subsection}
 
 \end{section}
