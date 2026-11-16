@@ -1,0 +1,438 @@
+clc; clear; close all;
+
+%% TRANSMITTER AND RECEIVER COIL SIMULATION
+% Inductive positioning system. Both coils are cylindrical multilayer windings.
+% Magnetic field: Biot-Savart law using complete elliptic integrals.
+%
+% IMPORTANT: Rin_rx = 450 mm is retained from the supplied code. This is
+% a 900 mm inner diameter. Check that this dimension is intentional.
+
+%% 1. PROJECT PARAMETERS
+mu0 = 4*pi*1e-7;
+f = 20e3;
+w = 2*pi*f;
+
+V_source = 15;               % Source voltage [V RMS]
+R_source = 50;               % Source resistance [ohm]
+
+% Transmitter
+Rin_tx = (17.5/2)*1e-3;      % Inner turn centreline radius [m]
+Rout_tx = 3*Rin_tx;        % Maximum allowed outer conductor radius [m]
+N_tx = 1700;
+tx_height = 15e-3;
+wire_diameter_tx = 0.1e-3;
+
+% Receiver
+Rin_rx = (50/2)*1e-3;             % Inner turn centreline radius [m]
+Rout_rx = 3*Rin_rx;
+N_rx = 2650;
+rx_height = 5e-3;
+wire_diameter_rx = 0.1e-3;
+
+% Copper and winding pitch
+rho_copper = 1.68e-8;
+spacing_tx = 0.005e-3;
+spacing_rx = 0.005e-3;
+pitch_tx = wire_diameter_tx + spacing_tx;
+pitch_rx = wire_diameter_rx + spacing_rx;
+A_tx = pi*(wire_diameter_tx/2)^2;
+A_rx = pi*(wire_diameter_rx/2)^2;
+
+z_separation = 20e-3;        % Distance between coil centre planes [m]
+
+%% 2. COIL GEOMETRY
+N_per_layer_tx = floor(tx_height/pitch_tx);
+N_per_layer_rx = floor(rx_height/pitch_rx);
+
+if N_per_layer_tx < 1 || N_per_layer_rx < 1
+    error('Each coil must fit at least one turn along its axial height.');
+end
+
+[r_tx,z_tx] = makeMultilayerCoil(N_tx,Rin_tx,pitch_tx,N_per_layer_tx);
+[r_rx,z_rx] = makeMultilayerCoil(N_rx,Rin_rx,pitch_rx,N_per_layer_rx);
+
+N_tx_layers = ceil(N_tx/N_per_layer_tx);
+N_rx_layers = ceil(N_rx/N_per_layer_rx);
+
+tx_outer_radius_actual = max(r_tx) + wire_diameter_tx/2;
+rx_outer_radius_actual = max(r_rx) + wire_diameter_rx/2;
+
+if tx_outer_radius_actual > Rout_tx
+    error('Transmitter winding does not fit between Rin_tx and Rout_tx.');
+end
+if rx_outer_radius_actual > Rout_rx
+    error('Receiver winding does not fit between Rin_rx and Rout_rx.');
+end
+
+length_tx = sum(2*pi*r_tx);  % Lead lengths omitted
+length_rx = sum(2*pi*r_rx);
+R_tx = rho_copper*length_tx/A_tx;  % DC resistance approximation
+R_rx = rho_copper*length_rx/A_rx;
+
+%% 3. APPROXIMATE SELF INDUCTANCE
+% Wheeler multilayer-coil formula. Dimensions in inches, result in uH.
+a_tx_in = mean(r_tx)/0.0254;
+b_tx_in = tx_height/0.0254;
+c_tx_in = ((max(r_tx)-min(r_tx))+wire_diameter_tx)/0.0254;
+L_tx = 0.8*a_tx_in^2*N_tx^2 / ...
+    (6*a_tx_in+9*b_tx_in+10*c_tx_in)*1e-6;
+
+a_rx_in = mean(r_rx)/0.0254;
+b_rx_in = rx_height/0.0254;
+c_rx_in = ((max(r_rx)-min(r_rx))+wire_diameter_rx)/0.0254;
+L_rx = 0.8*a_rx_in^2*N_rx^2 / ...
+    (6*a_rx_in+9*b_rx_in+10*c_rx_in)*1e-6;
+
+C_tx = 1/(w^2*L_tx);         % Series resonance capacitance [F]
+C_rx = 1/(w^2*L_rx);
+
+%% 4. TRANSMITTER CURRENT
+% Simplified resonant estimate; ignores AC resistance, capacitor ESR,
+% driver losses and changes in current caused by receiver loading.
+I_tx = V_source/(R_source+R_tx);
+
+%% 5. MUTUAL INDUCTANCE VS LATERAL DISPLACEMENT
+% Numerical resolution. Increase for accuracy at the cost of runtime.
+offsets = linspace(0,250e-3,21);
+Ntheta = 60;
+batch_size = 20;
+
+% Nonuniform receiver-disk radial grid: dense near the transmitter field.
+r_receiver_max = max(r_rx);
+r_dense_max = min(r_receiver_max,50e-3);
+r_int = unique([linspace(0,r_dense_max,180), ...
+                linspace(r_dense_max,r_receiver_max,100)]).';
+theta = linspace(0,2*pi,Ntheta);
+[TH,RR] = meshgrid(theta,r_int);
+
+% The transmitter field is axisymmetric. Precompute radial field profiles
+% once per receiver axial level and reuse them for every lateral offset.
+rho_profile_max = max(offsets)+r_receiver_max;
+rho_dense_max = min(rho_profile_max,60e-3);
+rho_profile = unique([linspace(0,rho_dense_max,300), ...
+                      linspace(rho_dense_max,rho_profile_max,250)]).';
+
+z_rx_levels = unique(z_rx);
+B_profiles = zeros(numel(rho_profile),numel(z_rx_levels));
+
+h_profile = waitbar(0,'Calculating transmitter field profiles...');
+for iz = 1:numel(z_rx_levels)
+    waitbar(iz/numel(z_rx_levels),h_profile, ...
+        sprintf('Field profiles: %.1f%%',100*iz/numel(z_rx_levels)));
+
+    z_receiver = z_separation+z_rx_levels(iz);
+    B_profile = zeros(size(rho_profile));
+
+    for it = 1:batch_size:N_tx
+        idx = it:min(it+batch_size-1,N_tx);
+        B_batch = coilBzBatch(rho_profile,z_receiver, ...
+            r_tx(idx),z_tx(idx),1,mu0);
+        B_profile = B_profile+reshape(sum(B_batch,3),[],1);
+    end
+    B_profiles(:,iz) = B_profile;
+end
+if isvalid(h_profile), close(h_profile); end
+
+M = zeros(size(offsets));
+h_mutual = waitbar(0,'Calculating mutual inductance...');
+for j = 1:numel(offsets)
+    waitbar(j/numel(offsets),h_mutual, ...
+        sprintf('Mutual inductance: %.1f%%',100*j/numel(offsets)));
+
+    dx = offsets(j);
+    X = dx+RR.*cos(TH);
+    Y = RR.*sin(TH);
+    rho_observation = sqrt(X.^2+Y.^2);
+    mutual = 0;
+
+    for iz = 1:numel(z_rx_levels)
+        B_total = interp1(rho_profile,B_profiles(:,iz), ...
+            rho_observation,'linear',0);
+        cumulative_flux = cumtrapz(r_int,B_total.*RR,1);
+        turn_indices = find(abs(z_rx-z_rx_levels(iz))<1e-12);
+
+        for ir = turn_indices
+            flux_theta = interp1(r_int,cumulative_flux,r_rx(ir),'linear');
+            mutual = mutual+trapz(theta,flux_theta);
+        end
+    end
+    M(j) = mutual;
+end
+if isvalid(h_mutual), close(h_mutual); end
+
+%% 6. COUPLING COEFFICIENT
+k = abs(M)./sqrt(L_tx*L_rx);
+
+%% 7. INDUCED RECEIVER VOLTAGE
+V_rx = w*abs(M)*I_tx;        % Open-circuit voltage [V RMS]
+
+%% 8. MAGNETIC FIELD VISUALIZATION
+field_half_width = max(150e-3,1.1*max(r_tx));
+x = linspace(-field_half_width,field_half_width,151);
+y = linspace(-field_half_width,field_half_width,151);
+[X,Y] = meshgrid(x,y);
+rho_field = sqrt(X.^2+Y.^2);
+Bz = zeros(size(rho_field));
+
+for it = 1:batch_size:N_tx
+    idx = it:min(it+batch_size-1,N_tx);
+    B_batch = coilBzBatch(rho_field,z_separation, ...
+        r_tx(idx),z_tx(idx),I_tx,mu0);
+    Bz = Bz+sum(B_batch,3);
+end
+
+%% 9. PRINT RESULTS
+fprintf('\n------ TRANSMITTER COIL ------\n');
+fprintf('Inner diameter:          %.2f mm\n',2*Rin_tx*1000);
+fprintf('Occupied outer diameter: %.2f mm\n',2*tx_outer_radius_actual*1000);
+fprintf('Axial winding height:    %.2f mm\n',tx_height*1000);
+fprintf('Number of turns:         %d\n',N_tx);
+fprintf('Number of radial layers: %d\n',N_tx_layers);
+fprintf('Turns per full layer:    %d\n',N_per_layer_tx);
+fprintf('Wire length:             %.2f m\n',length_tx);
+
+fprintf('\n------ RECEIVER COIL ------\n');
+fprintf('Inner diameter:          %.2f mm\n',2*Rin_rx*1000);
+fprintf('Occupied outer diameter: %.2f mm\n',2*rx_outer_radius_actual*1000);
+fprintf('Axial winding height:    %.2f mm\n',rx_height*1000);
+fprintf('Number of turns:         %d\n',N_rx);
+fprintf('Number of radial layers: %d\n',N_rx_layers);
+fprintf('Turns per full layer:    %d\n',N_per_layer_rx);
+fprintf('Wire length:             %.2f m\n',length_rx);
+
+fprintf('\n------ ELECTRICAL PARAMETERS ------\n');
+fprintf('Transmitter inductance:  %.3f uH\n',L_tx*1e6);
+fprintf('Receiver inductance:     %.3f uH\n',L_rx*1e6);
+fprintf('Transmitter resistance:  %.3f ohm (DC)\n',R_tx);
+fprintf('Receiver resistance:     %.3f ohm (DC)\n',R_rx);
+fprintf('Transmitter capacitor:   %.3f uF\n',C_tx*1e6);
+fprintf('Receiver capacitor:      %.3f uF\n',C_rx*1e6);
+fprintf('Estimated TX current:    %.4f A RMS\n',I_tx);
+
+fprintf('\n------ ZERO LATERAL DISPLACEMENT ------\n');
+fprintf('Mutual inductance:       %.4f uH\n',M(1)*1e6);
+fprintf('Coupling coefficient:    %.6f\n',k(1));
+fprintf('Open-circuit RX voltage: %.4f V RMS\n',V_rx(1));
+
+%% 10. MAXIMUM NUMBER OF TURNS
+N_tx_layers_max = floor((Rout_tx-Rin_tx-wire_diameter_tx/2)/pitch_tx)+1;
+N_rx_layers_max = floor((Rout_rx-Rin_rx-wire_diameter_rx/2)/pitch_rx)+1;
+N_tx_max = N_tx_layers_max*N_per_layer_tx;
+N_rx_max = N_rx_layers_max*N_per_layer_rx;
+
+fprintf('\n------ MAXIMUM COIL TURNS ------\n');
+fprintf('Transmitter maximum radial layers: %d\n',N_tx_layers_max);
+fprintf('Transmitter maximum total turns:  %d\n',N_tx_max);
+fprintf('Transmitter configured turns:     %d\n',N_tx);
+fprintf('Receiver maximum radial layers:   %d\n',N_rx_layers_max);
+fprintf('Receiver maximum total turns:     %d\n',N_rx_max);
+fprintf('Receiver configured turns:        %d\n',N_rx);
+
+% Receiver resonance capacitance
+C_rx = 1 / (w^2 * L_rx);
+
+fprintf('\nReceiver resonance:\n');
+fprintf('L_rx = %.4f mH\n', L_rx*1e3);
+fprintf('C_rx = %.4f nF\n', C_rx*1e9);
+fprintf('Target capacitance = 100 pF\n');
+
+%% 11. PLOTS
+figure;
+imagesc(x*1000,y*1000,Bz*1000);
+set(gca,'YDir','normal'); axis equal tight; colorbar;
+xlabel('X position [mm]'); ylabel('Y position [mm]');
+title('Magnetic flux density B_z at receiver centre plane [mT]');
+
+figure;
+plot(offsets*1000,M*1e6,'LineWidth',2); grid on;
+xlabel('Lateral displacement [mm]'); ylabel('Mutual inductance [uH]');
+title('Mutual inductance vs lateral displacement');
+
+figure;
+plot(offsets*1000,k,'LineWidth',2); grid on;
+xlabel('Lateral displacement [mm]'); ylabel('Coupling coefficient k');
+title('Coil coupling vs lateral displacement');
+
+figure;
+plot(offsets*1000,V_rx,'LineWidth',2); grid on;
+xlabel('Lateral displacement [mm]'); ylabel('Induced voltage [V RMS]');
+title('Open-circuit receiver voltage vs lateral displacement');
+
+
+12. TRANSMITTER SWEEP: TURNS VS DRIVE VOLTAGE
+
+V_sweep = linspace(0,15,61);
+N_tx_sweep_max = min(N_tx_max,max(N_tx,5*N_per_layer_tx));
+N_values = unique(round(linspace(1,N_tx_sweep_max,20)));
+N_values = unique([N_values,N_tx]);
+N_values = N_values(N_values<=N_tx_max);
+
+[N_grid,V_grid] = meshgrid(N_values,V_sweep);
+R_tx_sweep = zeros(size(N_values));
+B_tx_per_amp = zeros(size(N_values));
+
+for n = 1:numel(N_values)
+    [r_sweep,z_sweep] = makeMultilayerCoil( ...
+        N_values(n),Rin_tx,pitch_tx,N_per_layer_tx);
+    length_sweep = sum(2*pi*r_sweep);
+    R_tx_sweep(n) = rho_copper*length_sweep/A_tx;
+
+    dz = z_separation-z_sweep;
+    B_tx_per_amp(n) = sum(mu0*r_sweep.^2 ./ ...
+        (2*(r_sweep.^2+dz.^2).^(3/2)));
+end
+
+I_tx_grid = V_grid./(R_source+R_tx_sweep);
+B_tx_grid = I_tx_grid.*B_tx_per_amp;
+
+figure;
+surf(N_grid,V_grid,B_tx_grid*1e6); shading interp; colorbar;
+xlabel('Transmitter turns'); ylabel('Driving voltage [V RMS]');
+zlabel('On-axis magnetic field [uT]');
+title('Transmitter field vs turns and driving voltage');
+
+figure;
+surf(N_grid,V_grid,I_tx_grid); shading interp; colorbar;
+xlabel('Transmitter turns'); ylabel('Driving voltage [V RMS]');
+zlabel('Transmitter current [A RMS]');
+title('Transmitter current vs turns and driving voltage');
+
+figure;
+contourf(N_grid,V_grid,B_tx_grid*1e6,20); colorbar;
+xlabel('Transmitter turns'); ylabel('Driving voltage [V RMS]');
+title('Transmitter on-axis field [uT]');
+
+%% 13. RECEIVER SWEEP: TURNS VS INDUCED VOLTAGE
+% Each candidate receiver is a cylindrical multilayer winding.
+% The sweep is centred above the transmitter.
+N_rx_sweep_max = min(N_rx_max,max(N_rx,5*N_per_layer_rx));
+N_rx_values = unique(round(linspace(1,N_rx_sweep_max,15)));
+N_rx_values = unique([N_rx_values,N_rx]);
+N_rx_values = N_rx_values(N_rx_values<=N_rx_max);
+
+max_candidate_layers = ceil(max(N_rx_values)/N_per_layer_rx);
+r_flux_max = Rin_rx+(max_candidate_layers-1)*pitch_rx;
+r_flux_dense_max = min(r_flux_max,50e-3);
+r_flux = unique([linspace(0,r_flux_dense_max,220), ...
+                 linspace(r_flux_dense_max,r_flux_max,100)]).';
+
+M_rx_sweep = zeros(size(N_rx_values));
+V_rx_sweep = zeros(size(N_rx_values));
+h_receiver = waitbar(0,'Calculating receiver turn sweep...');
+
+for n = 1:numel(N_rx_values)
+    waitbar(n/numel(N_rx_values),h_receiver, ...
+        sprintf('Receiver sweep: %.1f%%',100*n/numel(N_rx_values)));
+
+    N_candidate = N_rx_values(n);
+    [r_candidate,z_candidate] = makeMultilayerCoil( ...
+        N_candidate,Rin_rx,pitch_rx,N_per_layer_rx);
+    z_candidate_levels = unique(z_candidate);
+    mutual_candidate = 0;
+
+    for iz = 1:numel(z_candidate_levels)
+        z_receiver = z_separation+z_candidate_levels(iz);
+        B_per_amp = zeros(size(r_flux));
+
+        for it = 1:batch_size:N_tx
+            idx = it:min(it+batch_size-1,N_tx);
+            B_batch = coilBzBatch(r_flux,z_receiver, ...
+                r_tx(idx),z_tx(idx),1,mu0);
+            B_per_amp = B_per_amp+reshape(sum(B_batch,3),[],1);
+        end
+
+        cumulative_flux = cumtrapz(r_flux,B_per_amp.*r_flux);
+        turn_indices = find(abs(z_candidate-z_candidate_levels(iz))<1e-12);
+
+        for ir = turn_indices
+            flux = 2*pi*interp1(r_flux,cumulative_flux, ...
+                r_candidate(ir),'linear');
+            mutual_candidate = mutual_candidate+flux;
+        end
+    end
+
+    M_rx_sweep(n) = mutual_candidate;
+    V_rx_sweep(n) = w*abs(mutual_candidate)*I_tx;
+end
+
+if isvalid(h_receiver), close(h_receiver); end
+
+figure;
+plot(N_rx_values,V_rx_sweep,'o-','LineWidth',1.5); grid on;
+xlabel('Receiver turns'); ylabel('Induced voltage [V RMS]');
+title('Open-circuit receiver voltage vs cylindrical receiver turns');
+
+[max_voltage,idx_best] = max(V_rx_sweep);
+fprintf('\n------ RECEIVER TURN SWEEP ------\n');
+fprintf('Maximum allowed turns:       %d\n',N_rx_max);
+fprintf('Largest turn count tested:   %d\n',max(N_rx_values));
+fprintf('Best voltage in sweep:       %.4f V RMS\n',max_voltage);
+fprintf('Turns at best voltage:       %d\n',N_rx_values(idx_best));
+
+
+14. LOCAL FUNCTIONS
+
+function [r_turns,z_turns] = makeMultilayerCoil(N,R_inner,pitch,N_per_layer)
+    % Each radial layer contains up to N_per_layer turns along the axis.
+    % A partial final layer is centred axially.
+
+    if N<1 || N_per_layer<1
+        error('N and N_per_layer must both be positive.');
+    end
+
+    N_layers = ceil(N/N_per_layer);
+    r_turns = zeros(1,N);
+    z_turns = zeros(1,N);
+    idx = 1;
+
+    for layer = 1:N_layers
+        turns_this_layer = min(N_per_layer,N-idx+1);
+        z_layer = ((0:turns_this_layer-1)- ...
+            (turns_this_layer-1)/2)*pitch;
+        indices = idx:(idx+turns_this_layer-1);
+
+        r_turns(indices) = R_inner+(layer-1)*pitch;
+        z_turns(indices) = z_layer;
+        idx = idx+turns_this_layer;
+    end
+end
+
+function Bz = coilBzBatch(rho,z_obs,a,z_turn,I,mu0)
+    % Axial magnetic field from circular loops.
+    % z_obs must be scalar. rho can be a vector or a 2-D matrix.
+    % Output size is size(rho) x number of loops.
+
+    if ~isscalar(z_obs)
+        error('z_obs must be a scalar observation height.');
+    end
+
+    a = a(:).';
+    z_turn = z_turn(:).';
+    if numel(a)~=numel(z_turn)
+        error('a and z_turn must contain the same number of elements.');
+    end
+
+    n = numel(a);
+    [nr,nc] = size(rho);
+    rho3 = repmat(rho,1,1,n);
+    a3 = repmat(reshape(a,1,1,n),nr,nc,1);
+    z_turn3 = repmat(reshape(z_turn,1,1,n),nr,nc,1);
+    z_rel = z_obs-z_turn3;
+
+    denominator_m = (a3+rho3).^2+z_rel.^2;
+    m = 4.*a3.*rho3./denominator_m;
+    m = min(max(m,0),1-eps);
+    [K,E] = ellipke(m);
+
+    denominator = (a3-rho3).^2+z_rel.^2;
+    denominator = max(denominator,realmin);
+
+    Bz = mu0*I./(2*pi.*sqrt(denominator_m)).* ...
+        (K+(a3.^2-rho3.^2-z_rel.^2)./denominator.*E);
+
+    axis_points = rho3<1e-12;
+    B_axis = mu0*I.*a3.^2 ./ ...
+        (2*(a3.^2+z_rel.^2).^(3/2));
+    Bz(axis_points) = B_axis(axis_points);
+end
+
