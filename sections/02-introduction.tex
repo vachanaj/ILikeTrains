@@ -1,32 +1,25 @@
 \newpage
 \begin{section}{Introduction}
+    Indoor positioning systems have various use cases for industries such as tracking inventory or navigating large buildings \cite{Wang2026}.
+    However, existing solutions often struggle in these environments: GPS suffers from indoor signal attenuation and multipath interference \cite{Sysnav2024}, while NFC is limited by short range \cite{Workm82024}.
+    Other systems like camera-based setups limit privacy \cite{Chelani2025} and Bluetooth devices like AirTags lack real-time updates \cite{VandeVelde2024}. 
+    Thus, the requirements for an effective indoor positioning system include low interference and cost and no line-of-sight requirements.
+    We therefore, investigate an electromagnetic positioning system designed specifically for 2D indoor localization, using model trains as the objects to be tracked.
 
-    \begin{subsection}{Motivation}
-
-
+    \begin{subsection}{Problem statement}
+        Electromagnetic solutions have their own engineering challenges such as distortion caused by picking up  electromagnetic interference.
+        Furthermore, the system's range is limited by the strength of its magnetic field, which diminishes with distance. 
+        Compensating for this requires either increasing transmitter power or using larger coils. 
+        Because power draw is constrained by the train setup and physical dimensions are limited by the scale of the locomotive, achieving sufficient operating range presents a significant design challenge.
     \end{subsection}
-    \begin{subsection}{Existing solutions and limitations}
-        There are several existing solutions for positioning and tracking indoors, but they often come with 
-        limitations such as high cost, complexity, or insufficient accuracy.\\
-
-        GPS-based solutions, for example, provide a accuracy with error margin of several meters even when the sky is 
-        unobstructed and are therefore not suitable for indoor environments due to the inaccuracy.\\
-
-        Camera-based positioning systems can provide high accuracy, but they often require complex setups, unobstructed 
-        view of the trains, image processing, and are sensitive to lighting conditions.\\
-
-        Bluetooth-based positioning systems like Airtags offer a high potential for indoor positioning but they can have a slower 
-        update frequency and could prove dificult to integrate in a custom positioning system as they usualy have their own closed ecosystem.\\
-
+    
+    \begin{subsection}{Scope/Limitations}
+        data aquisition using sound cardsinstead of ?
     \end{subsection}
-    \begin{subsection}{Problemstatement and requirements}
-
+  
+    \begin{subsection}{Report structure}
+        The remainder of this report is organized as follows: Section 3 presents related work used for research, Section 4 gives an overview of the system, Section 5 describes the power supply for the system, Section 6 describes the transmitter, Section 7 describes the receiver, Section 8 describes the positioning algorithm, Section 9 discusses the overall resulting system and Section 10 concludes the report.
+        Section 5, 6, 7, 8 are further structured into method, results and discussion subsections. 
     \end{subsection}
-    \begin{subsection}{Scope of the project}
-
-    \end{subsection}
-    \begin{subsection}{Objectives and report structure}
-
-    \end{subsection}
-
+    
 \end{section}
