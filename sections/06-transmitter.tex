@@ -1,10 +1,16 @@
-\newpage %david
+\newpage
 \begin{section}{Transmitter}
 
     \begin{subsection}{Method}
+    The transmitter is responsible for sending signals from the train, making it possible to locate and track the train's position remotely.
+    The transmitter recives power from the track (see Section~\ref{sec:Power supply from track}) and uses the power to generate a electromagnetic frequency.
+    The frequency generated is then picked up by recivers and the amplitude of the frequency is used to triangulate the trains possition.
 
     \end{subsection}
     \begin{subsection}{Implementation}
+        The frequency is generated using a ESP32 and a H-bridge hooked up to a coil. 
+        The power from the track is rectified using a full bridge rectifier with a capacitor, 
+        then sent to a buck converter to steady and lower the voltage for the H-bridge
 
     \end{subsection}
     \begin{subsection}{Results}
